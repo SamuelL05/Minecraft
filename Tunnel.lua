@@ -70,16 +70,16 @@ end
 
 function descend(yLvl, targetLvl) 
 
-    local destination = 0
-    local blocks = yLvl - targetLvl
+    local current = 0
+    local finish = yLvl - targetLvl
     local slot = 2
     local item = 0
     
     turtle.digDown()
     turtle.down()
-    blocks = blocks - 1
+    current = current + 1
 
-    while (destination < blocks) do
+    while (current < finish) do
 
         turtle.digDown()
         turtle.down()
@@ -90,11 +90,11 @@ function descend(yLvl, targetLvl)
             item = turtle.getItemDetail(slot)
             slot = slot + 1
         end
-
-        slot = 2
+       
         turtle.select(slot)
         turtle.placeUp()
-        destination = destination + 1
+        slot = 2
+        current = current + 1
     end
 end
 
@@ -148,7 +148,7 @@ function refuel()
 
         if (turtle.getItemCount(1) < 2) then
 
-            while (index < 9 and turtle.getItemCount(1) < 2) do
+            while (index < 9 or turtle.getItemCount(1) < 2) do
                 item = turtle.getItemDetail(index)
 
                 if (item.name == "Coal" or item.name == "Charcoal") then
