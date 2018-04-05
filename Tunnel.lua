@@ -38,16 +38,14 @@ function tunnel(length, width, yLvl, targetLvl)
             indexL = indexL + 1
         end
 
-        if (indexW + 1 == width) then
-            complete = true
+        if (indexW + 2 ~= width) then
+            turtle.turnLeft()
+            turtle.dig()
+            turtle.forward()
+            turtle.digUp()
+            turtle.digDown()
+            turtle.turnLeft()
         end
-
-        turtle.turnLeft()
-        turtle.dig()
-        turtle.forward()
-        turtle.digUp()
-        turtle.digDown()
-        turtle.turnLeft()
 
         exitCode = refuel()
         if (exitCode == -1) then
@@ -61,19 +59,25 @@ function tunnel(length, width, yLvl, targetLvl)
             return 1
         end
 
+        if (indexW + 1 == width) then
+            complete = true
+        end
+
         indexW = indexW + 1
     end
 
-    returnHome(width)
+    returnHome(width, yLvl, targetLvl)
     return 0
 end
 
 function ascend(yLvl, targetLvl)
 
+    turtle.select(1)
     local current = 0
     local finish = yLvl - targetLvl
-    local slot = 2
+    local slot = 1
     local item = 0
+    local count = 0
     
     turtle.digUp()
     turtle.up()
@@ -81,29 +85,43 @@ function ascend(yLvl, targetLvl)
 
     while (current < finish) do
 
+        slot = 1
         turtle.digUp()
         turtle.up()
 
-        item = turtle.getItemDetail(slot)
-        while (slot < 8 or item.name ~= "Dirt" or item.name ~= "Sand" or item.name ~= "Cobblestone" or item.name ~= "Basalt") do
+        while (slot < 17) do
 
-            item = turtle.getItemDetail(slot)
+            count = turtle.getItemCount(slot)
+            if (count > 0) then
+
+                item = turtle.getItemDetail(slot)
+                if (item.name == "minecraft:cobblestone" or item.name == "minecraft:dirt" or item.name == "minecraft:sand" or item.name == "minecraft:basalt") then
+                    turtle.select(slot)
+                    turtle.placeDown()
+                    slot = 17
+                end
+            else
+                slot = 17
+            end
+
             slot = slot + 1
-        end
-       
-        turtle.select(slot)
-        turtle.placeDown()
-        slot = 2
+        end      
+
         current = current + 1
     end
+
+    turtle.turnRight()
+    turtle.placeDown()
 end
 
 function descend(yLvl, targetLvl) 
 
+    turtle.select(1)
     local current = 0
     local finish = yLvl - targetLvl
-    local slot = 2
+    local slot = 1
     local item = 0
+    local count = 0
     
     turtle.digDown()
     turtle.down()
@@ -111,19 +129,28 @@ function descend(yLvl, targetLvl)
 
     while (current < finish) do
 
+        slot = 1
         turtle.digDown()
         turtle.down()
 
-        item = turtle.getItemDetail(slot)
-        while (slot < 8 or item.name ~= "Dirt" or item.name ~= "Sand" or item.name ~= "Cobblestone" or item.name ~= "Basalt") do
+        while (slot < 17) do
 
-            item = turtle.getItemDetail(slot)
+            count = turtle.getItemCount(slot)
+            if (count > 0) then
+
+                item = turtle.getItemDetail(slot)
+                if (item.name == "minecraft:cobblestone" or item.name == "minecraft:dirt" or item.name == "minecraft:sand" or item.name == "minecraft:basalt") then
+                    turtle.select(slot)
+                    turtle.placeUp()
+                    slot = 17
+                end
+            else
+                slot = 17
+            end
+    
             slot = slot + 1
-        end
-       
-        turtle.select(slot)
-        turtle.placeUp()
-        slot = 2
+        end      
+
         current = current + 1
     end
 end
@@ -131,38 +158,43 @@ end
 
 function inventoryControl() 
 
-    local index = 2
+    turtle.select(1)
+    local slot = 1
     local item = 0
 
-    while (index < 8) do
+    while (slot < 17) do
 
-        item = turtle.select(index)
+        if (turtle.getItemCount(slot) > 0) then
+            item = turtle.getItemDetail(slot)
 
-        if (item.name == "Cobblestone" or item.name == "Dirt" or item.name == "Sand" or item.name == "Basalt") then
-            turtle.drop(item.count)
+            if (item.name == "minecraft:cobblestone" or item.name == "minecraft:dirt" or item.name == "minecraft:sand" or item.name == "minecraft:basalt") then
+                turtle.select(slot)
+                turtle.drop(item.count)
+            end
+        else
+            slot = 17
         end
-
-        index = index + 1
+        slot = slot + 1
     end
 
-    if (turtle.getItemCount(8) > 0) then
+    if (turtle.getItemCount(16) > 0) then
         return 1
     end
 end
 
 function returnHome(width, yLvl, targetLvl)
 
-    local index = 0
+    local current = 0
 
-    turtle.turnRight()
+    turtle.turnLeft()
 
-    while (index < width) do
+    while (current < width) do
 
         if (turtle.forward() == false) then
             print("Unable to correctly return home..")
         end
         
-        index = index + 1 
+        current = current + 1 
     end
 
     ascend(yLvl, targetLvl)
@@ -170,36 +202,52 @@ end
 
 function refuel() 
 
+    turtle.select(1)
     local fuelLvl = turtle.getFuelLevel()
-    local index = 2
+    local slot = 1
     local item = 0
+    local count = 0
 
-    if (fuelLvl < 500) then
+    while (fuelLvl < 50 and slot < 17) do
 
-        if (turtle.getItemCount(1) < 2) then
+        count = turtle.getItemCount(1)
+        if (count == 0) then
 
-            while (index < 9 or turtle.getItemCount(1) < 2) do
-                item = turtle.getItemDetail(index)
+            while (slot < 17 and turtle.getFuelLevel() < 50) do
 
-                if (item.name == "Coal" or item.name == "Charcoal") then
-                    turtle.select(index)
-                    
-                    while (turtle.getItemCount(index) > 0 and turtle.getFuelLevel() < 1000) do
-                        turtle.refuel(1)     
-                    end 
+                count = turtle.getItemCount(slot)
 
-                    while (turle.getItemCount(1) < 64 and turtle.getItemCount(index) > 0) do
-                        turtle.transferTo(1, 1)
+                if (count > 0) then
+
+                    item = turtle.getItemDetail(slot)
+          
+                    if (item.name == "minecraft:coal" or item.name == "minecraft:charcoal") then
+
+                        turtle.select(slot)
+
+                        while (fuelLvl < 50 and count > 0) do
+
+                            turtle.refuel(1)
+                            count = turtle.getItemCount(slot)
+                            fuelLvl = turtle.getFuelLevel()                            
+                        end
                     end
                 end
 
-                if (index == 8 and turtle.getFuelLevel < 500) then
+                fuelLvl = turtle.getFuelLevel()  
+                if (slot == 16 and fuelLvl < 50) then
                     return -1
                 end
 
-                index = index + 1
+                slot = slot + 1
             end
+
+        else
+            turtle.select(1)
+            turtle.refuel(1)
         end
+
+        fuelLvl = turtle.getFuelLevel()
     end
 end
 
@@ -221,7 +269,7 @@ local length, width, yLvl, targetLvl, exitCode
 print("Enter Length of Tunnel.. ")
 length = getInt()
 
-print("Enter an Even Width for the Tunnel.. ")
+print("Enter a multiple of 4 for width.. ")
 width = getInt()
 
 print("Enter the current Y level.. ")
@@ -230,8 +278,8 @@ yLvl = getInt()
 print("Enter the target level.. ")
 targetLvl = getInt()
 
-while (width % 2 ~= 0) do
-    print("Even numbers only..")
+while (width % 4 ~= 0) do
+    print("Enter a multiple of 4..")
     width = getInt()
 end
 
