@@ -68,6 +68,36 @@ function tunnel(length, width, yLvl, targetLvl)
     return 0
 end
 
+function ascend(yLvl, targetLvl)
+
+    local current = 0
+    local finish = yLvl - targetLvl
+    local slot = 2
+    local item = 0
+    
+    turtle.digUp()
+    turtle.up()
+    current = current + 1
+
+    while (current < finish) do
+
+        turtle.digUp()
+        turtle.up()
+
+        item = turtle.getItemDetail(slot)
+        while (slot < 8 or item.name ~= "Dirt" or item.name ~= "Sand" or item.name ~= "Cobblestone" or item.name ~= "Basalt") do
+
+            item = turtle.getItemDetail(slot)
+            slot = slot + 1
+        end
+       
+        turtle.select(slot)
+        turtle.placeDown()
+        slot = 2
+        current = current + 1
+    end
+end
+
 function descend(yLvl, targetLvl) 
 
     local current = 0
