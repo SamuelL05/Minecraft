@@ -8,7 +8,7 @@ function tunnel(length, width, yLvl, targetLvl)
     
     descend(yLvl, targetLvl)
 
-    while (complete == false) do
+    while (indexW < width) do
         
         indexL = 0       
         while (indexL < length) do
@@ -38,7 +38,7 @@ function tunnel(length, width, yLvl, targetLvl)
             indexL = indexL + 1
         end
 
-        if (indexW + 2 ~= width) then
+        if (indexW + 1 < width) then
             turtle.turnLeft()
             turtle.dig()
             turtle.forward()
@@ -59,16 +59,13 @@ function tunnel(length, width, yLvl, targetLvl)
             return 1
         end
 
-        if (indexW + 1 == width) then
-            complete = true
-        end
-
         indexW = indexW + 1
     end
 
     returnHome(width, yLvl, targetLvl)
     return 0
 end
+
 
 function ascend(yLvl, targetLvl)
 
@@ -95,7 +92,8 @@ function ascend(yLvl, targetLvl)
             if (count > 0) then
 
                 item = turtle.getItemDetail(slot)
-                if (item.name == "minecraft:cobblestone" or item.name == "minecraft:dirt" or item.name == "minecraft:sand" or item.name == "minecraft:basalt") then
+                if (item.name == "engineer's toolbox:limestone" or item.name == "minecraft:gravel" or item.name == "minecraft:cobblestone"
+                 or item.name == "minecraft:dirt" or item.name == "minecraft:sand" or item.name == "minecraft:basalt") then
                     turtle.select(slot)
                     turtle.placeDown()
                     slot = 17
@@ -113,6 +111,7 @@ function ascend(yLvl, targetLvl)
     turtle.turnRight()
     turtle.placeDown()
 end
+
 
 function descend(yLvl, targetLvl) 
 
@@ -139,7 +138,8 @@ function descend(yLvl, targetLvl)
             if (count > 0) then
 
                 item = turtle.getItemDetail(slot)
-                if (item.name == "minecraft:cobblestone" or item.name == "minecraft:dirt" or item.name == "minecraft:sand" or item.name == "minecraft:basalt") then
+                if (item.name == "engineer's toolbox:limestone" or item.name == "minecraft:gravel" or item.name == "minecraft:cobblestone"
+                 or item.name == "minecraft:dirt" or item.name == "minecraft:sand" or item.name == "minecraft:basalt") then
                     turtle.select(slot)
                     turtle.placeUp()
                     slot = 17
@@ -167,7 +167,8 @@ function inventoryControl()
         if (turtle.getItemCount(slot) > 0) then
             item = turtle.getItemDetail(slot)
 
-            if (item.name == "minecraft:cobblestone" or item.name == "minecraft:dirt" or item.name == "minecraft:sand" or item.name == "minecraft:basalt") then
+            if (item.name == "engineer's toolbox:limestone" or item.name == "minecraft:gravel" or item.name == "minecraft:cobblestone"
+            or item.name == "minecraft:dirt" or item.name == "minecraft:sand" or item.name == "minecraft:basalt") then
                 turtle.select(slot)
                 turtle.drop(item.count)
             end
@@ -181,6 +182,7 @@ function inventoryControl()
         return 1
     end
 end
+
 
 function returnHome(width, yLvl, targetLvl)
 
@@ -199,6 +201,7 @@ function returnHome(width, yLvl, targetLvl)
 
     ascend(yLvl, targetLvl)
 end
+
 
 function refuel() 
 
@@ -264,6 +267,8 @@ function getInt()
     return input
 end
 
+
+
 local length, width, yLvl, targetLvl, exitCode
 
 print("Enter Length of Tunnel.. ")
@@ -285,15 +290,48 @@ end
 
 exitCode = tunnel(length, width, yLvl, targetLvl)
 
-if (exitCode == 0) then
-    print("Successfully completed task with inventory space remaining...")
+if (exitCode == 1) then
+
+    local index = 0
+    local item = 0
+
+    while (exitCode == 1) do 
+
+        print("Empting inventory...")
+        turtle.turnRight()
+        turlte.turnRight()
+    
+        while (index < 17) do
+
+            turtle.select(index)
+            item.getItemDetail(index)
+
+            if (item.name ~= "minecraft:coal" and item.name ~= "minecraft:charcoal") then
+                turtle.drop(item.count)
+            end
+            
+            index = index + 1     
+        end
+
+        index = 0
+        targetLvl = targetLvl - 3
+
+        if (targetLvl == 8) then
+            print("Maximum mining depth reached, terminating program...")
+            exitCode = 0
+        end
+
+        exitCode = tunnel(length, width, yLvl, targetLvl)
+    end
+
+elseif (exitCode == 0) then
+    turtle.turnRight()
+    turtle.turnRight()
+    print("Successfully completed task...")
 
 elseif (exitCode == -1) then
     print("Critical fuel level reached, task abandoned...")
-
-elseif (exitCode == 1) then
-    print("Task aborted due to inventory control...")
-
+    
 else
     print("This shouldn't print...")
 end
